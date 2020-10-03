@@ -1,5 +1,7 @@
 package;
 
+import flixel.effects.FlxFlicker;
+import flixel.addons.display.FlxStarField.FlxStarField2D;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.util.FlxTimer;
 import haxe.Timer;
@@ -20,12 +22,17 @@ class PlayState extends FlxState
 
 	public static var BIRD_INITIAL_Y:Int = HALF_SCREEN_HEIGHT;
 	public static var PIPE_VEL_X:Float = -200.0;
+	public static var STARS_SPEED_MIN:Int = 100;
+	public static var STARS_SPEED_MAX:Int = 300;
 
 	private var birdSprite:Bird;
 	private var pipes:FlxTypedSpriteGroup<Pipe>;
 	private var rewindSprite:FlxSprite;
+	private var starField:FlxStarField2D;
+
 	private var birdHit:Bool;
 	private var isGameOver:Bool;
+	private var currentLives:Int;
 	
 	// State to control bird
 	private var beats:Array<Bool>;
@@ -34,10 +41,17 @@ class PlayState extends FlxState
 	private var barTimeStamp:Float;
 	private var tickTimer:Timer;
 
+	// UI
+	private var livesSprites:Array<FlxSprite>;
+
 	override public function create():Void
 	{
 		super.create();
 		//bgColor = 0xffaaaaaa;
+
+		this.starField = new FlxStarField2D(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 150);
+		this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
+		this.add(this.starField);
 
 		this.pipes = new FlxTypedSpriteGroup<Pipe>(0.0, 0.0, 30);
 		for (i in 0...30)
@@ -63,6 +77,19 @@ class PlayState extends FlxState
 		this.add(rewindSprite);
 		this.rewindSprite.visible = false;
 		this.rewindSprite.exists = false;
+
+		// UI
+		this.currentLives = 3;
+		this.livesSprites = new Array<FlxSprite>();
+		for (i in 0...this.currentLives)
+		{
+			var s:FlxSprite = new FlxSprite(10 + i * 24, 10);
+			s.loadGraphic("assets/images/hearts.png", true, 16, 16);
+			s.animation.add("static", [4], 1);
+			s.animation.play("static");
+			this.add(s);
+			this.livesSprites.push(s);
+		}
 
 		// Setup beat
 		var BPM:Int = 100;
@@ -112,11 +139,26 @@ class PlayState extends FlxState
 		}
 	}
 
+	private function decreaseLives()
+	{
+		this.livesSprites[this.currentLives-1].exists = false;
+		this.livesSprites[this.currentLives-1].visible = false;
+		this.currentLives -= 1;
+	}
+
 	public function birdOverlapsPipe(o1:Bird, o2:Pipe):Void
 	{
-		if (FlxG.pixelPerfectOverlap(o1, o2))
+		if (!birdHit && !FlxFlicker.isFlickering(birdSprite) && FlxG.pixelPerfectOverlap(o1, o2))
 		{
-			//birdHit = true;
+			if (this.currentLives == 0)
+			{
+				birdHit = true;
+			}
+			else
+			{
+				FlxFlicker.flicker(birdSprite, 0.5);
+				decreaseLives();
+			}
 		}
 	}
 
@@ -150,6 +192,7 @@ class PlayState extends FlxState
 				this.rewindSprite.visible = true;
 				this.rewindSprite.exists = true;
 				this.rewindSprite.animation.play("rew");
+				//this.starField.setStarSpeed(Std.int(STARS_SPEED_MIN / 5), Std.int(STARS_SPEED_MAX / 5));
 				backPressed = true;
 			}
 			else
@@ -157,6 +200,7 @@ class PlayState extends FlxState
 				this.rewindSprite.visible = false;
 				this.rewindSprite.exists = false;
 				this.rewindSprite.animation.stop();
+				//this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
 			}
 
 			for (p in this.pipes.members)
@@ -249,7 +293,7 @@ class PlayState extends FlxState
 			isGameOver = true;
 			trace("isGameOver: true");
 		}
-		else if (!birdHit)
+		else if (!birdHit && !FlxFlicker.isFlickering(birdSprite))
 		{
 			FlxG.overlap(this.birdSprite, this.pipes, birdOverlapsPipe);
 		}

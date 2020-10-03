@@ -13,7 +13,7 @@ class Bird extends FlxSprite
     {
         super(startX, startY);
         //this.makeGraphic(40, 40, FlxColor.RED);
-        this.loadGraphic("assets/images/bird.png");
+        this.loadRotatedGraphic("assets/images/bird.png", 360);
         this.acceleration.y = 400;
         this.maxVelocity.y = 500;
 
@@ -36,6 +36,14 @@ class Bird extends FlxSprite
         if (jumpKeyJustPressed)
         {
             this.velocity.y = -(this.maxVelocity.y / 2);
+        }
+        if (this.velocity.y < 0)
+        {
+            this.angle = Math.max(this.angle - 100.0 * elapsed, -55);
+        }
+        else
+        {
+            this.angle = this.angle + 100.0 * elapsed;
         }
 
         super.update(elapsed);
