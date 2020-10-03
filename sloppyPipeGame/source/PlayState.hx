@@ -190,11 +190,22 @@ class PlayState extends FlxState
 
 	private function setGameProperties():Void
 	{
-        this.birdSprite.acceleration.y = 400;
-		this.birdSprite.maxVelocity.y = 700;
-		this.birdSprite.jumpAmount = 400;
-		this.jumpYThreshold = 310;
-		PIPE_VEL_X = -300;
+		if (MenuState.currentChoice == 0)
+		{
+        	this.birdSprite.acceleration.y = 400;
+			this.birdSprite.maxVelocity.y = 600;
+			this.birdSprite.jumpAmount = 300;
+			this.jumpYThreshold = 270;
+			PIPE_VEL_X = -150;
+		}
+		else
+		{
+        	this.birdSprite.acceleration.y = 400;
+			this.birdSprite.maxVelocity.y = 700;
+			this.birdSprite.jumpAmount = 400;
+			this.jumpYThreshold = 350;
+			PIPE_VEL_X = -300;
+		}
 	}
 
 	public function restart()
