@@ -1,5 +1,6 @@
 package;
 
+import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxStarField.FlxStarField2D;
@@ -26,6 +27,8 @@ class PlayState extends FlxState
 	public static var STARS_SPEED_MIN:Int = 100;
 	public static var STARS_SPEED_MAX:Int = 300;
 
+	public static var SONG_BPM:Int = 120;
+
 	private var birdSprite:Bird;
 	private var pipes:FlxTypedSpriteGroup<Pipe>;
 	private var rewindSprite:FlxSprite;
@@ -43,6 +46,9 @@ class PlayState extends FlxState
 	private var barTimeStamp:Float;
 	private var tickTimer:Timer;
 
+	// Sounds
+	private var mainTrack:FlxSound;
+
 	// UI
 	private var livesSprites:Array<FlxSprite>;
 	private var scoreLabel:FlxText;
@@ -51,6 +57,10 @@ class PlayState extends FlxState
 	{
 		super.create();
 		//bgColor = 0xffaaaaaa;
+
+		FlxG.mouse.visible = false;
+		this.mainTrack = new FlxSound();
+		this.mainTrack.loadEmbedded("assets/music/giag.ogg", true, false);
 
 		this.starField = new FlxStarField2D(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 150);
 		this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
@@ -94,11 +104,10 @@ class PlayState extends FlxState
 			this.livesSprites.push(s);
 		}
 		this.score = 0;
-		this.scoreLabel = new FlxText(SCREEN_WIDTH - 100, 10, 90, "SCORE: " + this.score);
+		this.scoreLabel = new FlxText(SCREEN_WIDTH - 190 + 10, 10, 190, "SCORE: " + this.score, 16);
 		this.add(scoreLabel);
 
 		// Setup beat
-		var BPM:Int = 100;
 		// 4 bars per beat, 4 beat => 16 elements
 		beats = [
 			false, false, false,false,
@@ -108,11 +117,45 @@ class PlayState extends FlxState
 		];
 		currentBarIndex = 0;
 		barTimeStamp = 0;
-		msPerBar = ((1.0 / (BPM / 60)) * 1000) / 4;
+		msPerBar = ((1.0 / (SONG_BPM / 60)) * 1000) / 4;
 		trace("msPerBar: " + msPerBar);
 		this.tickTimer = null;
 
 		isGameOver = false;
+		//this.mainTrack.play();
+		this.mainTrack.play(true, 10000);
+		this.mainTrack.fadeIn(30.0, 0.0, 1.0);
+	}
+
+	public function restart()
+	{
+		this.currentLives = 3;
+		for (s in this.livesSprites)
+		{
+			s.exists = true;
+			s.visible = true;
+		}
+		this.birdSprite.y = BIRD_INITIAL_Y;
+		this.birdSprite.angle = 0;
+		this.birdSprite.exists = true;
+
+		for (p in this.pipes)
+		{
+			p.kill();
+		}
+		spawnNewPipes(SCREEN_WIDTH);
+
+		this.score = 0;
+		this.scoreLabel.text = "SCORE: " + this.score;
+
+		this.rewindSprite.visible = false;
+		this.rewindSprite.exists = false;
+		this.rewindSprite.animation.stop();
+
+		birdHit = false;
+		isGameOver = false;
+		this.mainTrack.play(true, 10000);
+		this.mainTrack.fadeIn(30.0, 0.0, 1.0);
 	}
 
 	public function spawnNewPipes(fromX:Int):Void
@@ -252,6 +295,14 @@ class PlayState extends FlxState
 				pipes.y = Math.max(pipes.y - (yFactor * elapsed), -50.0);
 			}
 		}
+		else
+		{
+			// Gameover
+			if (FlxG.keys.pressed.R)
+			{
+				this.restart();
+			}
+		}
 
 		// Move Bird
 		/*
@@ -306,9 +357,8 @@ class PlayState extends FlxState
 		super.update(elapsed);
 
 		// Do collisions here
-		if (birdSprite.y > SCREEN_HEIGHT)
+		if (!isGameOver && birdSprite.y > SCREEN_HEIGHT)
 		{
-			birdSprite.active = false;
 			birdSprite.exists = false;
 			setGameOver();
 			//trace("isGameOver: true");

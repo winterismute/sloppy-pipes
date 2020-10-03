@@ -39,7 +39,7 @@ class Bird extends FlxSprite
         }
         if (this.velocity.y < 0)
         {
-            this.angle = Math.max(this.angle - 100.0 * elapsed, -55);
+            this.angle = Math.max(this.angle - 150.0 * elapsed, -35);
         }
         else
         {
