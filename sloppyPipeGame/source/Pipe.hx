@@ -21,7 +21,6 @@ class Pipe extends FlxSprite
 
         if ((this.x + this.width) < 0)
         {
-            this.exists = false;
             this.alive = false;
         }
     }

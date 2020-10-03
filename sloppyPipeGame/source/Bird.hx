@@ -8,14 +8,16 @@ class Bird extends FlxSprite
     // State controller vars
     private var jumpKeyPressed:Bool;
     private var jumpKeyJustPressed:Bool;
+    public var jumpAmount:Float;
 
     public function new(startX:Float, startY:Float)
     {
         super(startX, startY);
         //this.makeGraphic(40, 40, FlxColor.RED);
-        this.loadRotatedGraphic("assets/images/bird.png", 360);
+        this.loadRotatedGraphic("assets/images/bird_bigger.png", 360);
         this.acceleration.y = 400;
         this.maxVelocity.y = 500;
+        this.jumpAmount = this.maxVelocity.y / 2;
 
         this.jumpKeyPressed = false;
         this.jumpKeyJustPressed = false;
@@ -35,7 +37,7 @@ class Bird extends FlxSprite
     {
         if (jumpKeyJustPressed)
         {
-            this.velocity.y = -(this.maxVelocity.y / 2);
+            this.velocity.y = -this.jumpAmount;
         }
         if (this.velocity.y < 0)
         {

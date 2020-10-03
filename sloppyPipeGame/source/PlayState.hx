@@ -40,6 +40,7 @@ class PlayState extends FlxState
 	private var score:Int;
 	
 	// State to control bird
+	private var jumpYThreshold:Float;
 	private var beats:Array<Bool>;
 	private var currentBarIndex:Int;
 	private var msPerBar:Float;
@@ -59,8 +60,17 @@ class PlayState extends FlxState
 		//bgColor = 0xffaaaaaa;
 
 		FlxG.mouse.visible = false;
-		this.mainTrack = new FlxSound();
-		this.mainTrack.loadEmbedded("assets/music/giag.ogg", true, false);
+		if (FlxG.sound.music == null)
+		{
+			FlxG.sound.playMusic("assets/music/giag.ogg", 0.3, true);
+			FlxG.sound.music.play(true, 10000.0);
+			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
+		}
+		else
+		{
+			FlxG.sound.music.play(true, 10000.0);
+			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
+		}
 
 		this.starField = new FlxStarField2D(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 150);
 		this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
@@ -121,10 +131,19 @@ class PlayState extends FlxState
 		trace("msPerBar: " + msPerBar);
 		this.tickTimer = null;
 
+		setGameProperties();
+
 		isGameOver = false;
 		//this.mainTrack.play();
-		this.mainTrack.play(true, 10000);
-		this.mainTrack.fadeIn(30.0, 0.0, 1.0);
+	}
+
+	private function setGameProperties():Void
+	{
+        this.birdSprite.acceleration.y = 400;
+		this.birdSprite.maxVelocity.y = 700;
+		this.birdSprite.jumpAmount = 400;
+		this.jumpYThreshold = 310;
+		PIPE_VEL_X = -300;
 	}
 
 	public function restart()
@@ -139,18 +158,17 @@ class PlayState extends FlxState
 		this.birdSprite.angle = 0;
 		this.birdSprite.exists = true;
 
-		for (p in this.pipes)
+		// SOMEHOW THE CODE BELOW DOES NOT WORK??
+		for (p in this.pipes.members)
 		{
+			p.x = 0;
+			p.y = 1100;
 			p.kill();
 		}
 		spawnNewPipes(SCREEN_WIDTH);
 
 		this.score = 0;
 		this.scoreLabel.text = "SCORE: " + this.score;
-
-		this.rewindSprite.visible = false;
-		this.rewindSprite.exists = false;
-		this.rewindSprite.animation.stop();
 
 		birdHit = false;
 		isGameOver = false;
@@ -182,9 +200,7 @@ class PlayState extends FlxState
 				p.y = SCREEN_HEIGHT - FlxG.random.int(50, Pipe.HEIGHT - 80);
 				p.flipY = false;
 			}
-			p.velocity.x = PIPE_VEL_X;
-			p.alive = true;
-			p.exists = true;
+			p.revive();
 		}
 	}
 
@@ -205,12 +221,16 @@ class PlayState extends FlxState
 				p.velocity.x = p.velocity.y = 0;
 			}
 		}
+		this.rewindSprite.visible = false;
+		this.rewindSprite.exists = false;
+		this.rewindSprite.animation.stop();
 	}
 
 	public function birdOverlapsPipe(o1:Bird, o2:Pipe):Void
 	{
 		if (!birdHit && !FlxFlicker.isFlickering(birdSprite) && FlxG.pixelPerfectOverlap(o1, o2))
 		{
+			decreaseLives();
 			if (this.currentLives == 0)
 			{
 				birdHit = true;
@@ -218,7 +238,6 @@ class PlayState extends FlxState
 			else
 			{
 				FlxFlicker.flicker(birdSprite, 0.5);
-				decreaseLives();
 			}
 		}
 	}
@@ -268,7 +287,7 @@ class PlayState extends FlxState
 
 			for (p in this.pipes.members)
 			{
-				if (p.exists)
+				if (p.alive)
 				{
 					if (p.x > maxX)
 					{
@@ -300,7 +319,8 @@ class PlayState extends FlxState
 			// Gameover
 			if (FlxG.keys.pressed.R)
 			{
-				this.restart();
+				//this.restart();
+				FlxG.resetState();
 			}
 		}
 
@@ -348,7 +368,7 @@ class PlayState extends FlxState
 		}
 		*/
 
-		if (!birdHit && birdSprite.y >= HALF_SCREEN_HEIGHT)
+		if (!birdHit && birdSprite.y >= this.jumpYThreshold)
 		{
 			this.birdSprite.onJumpKeyJustPressed();
 		}
