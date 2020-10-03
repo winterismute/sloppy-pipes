@@ -87,10 +87,6 @@ class PlayState extends FlxState
 		//FlxG.random.resetInitialSeed()
 		spawnNewPipes(SCREEN_WIDTH);
 
-		this.birdSprite = new Bird(50, BIRD_INITIAL_Y);
-		birdHit = false;
-		this.add(this.birdSprite);
-
 		this.rewindSprite = new FlxSprite(0, 0);
 		this.rewindSprite.loadGraphic(AssetPaths.rewind_sheet__png, true, SCREEN_WIDTH, SCREEN_HEIGHT);
 		this.rewindSprite.animation.add("rew",
@@ -100,6 +96,10 @@ class PlayState extends FlxState
 		this.add(rewindSprite);
 		this.rewindSprite.visible = false;
 		this.rewindSprite.exists = false;
+
+		this.birdSprite = new Bird(50, BIRD_INITIAL_Y);
+		birdHit = false;
+		this.add(this.birdSprite);
 
 		// UI
 		this.currentLives = 3;
