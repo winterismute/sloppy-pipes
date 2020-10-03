@@ -1,5 +1,6 @@
 package;
 
+import flixel.addons.display.FlxBackdrop;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
 import flixel.effects.FlxFlicker;
@@ -32,7 +33,11 @@ class PlayState extends FlxState
 	private var birdSprite:Bird;
 	private var pipes:FlxTypedSpriteGroup<Pipe>;
 	private var rewindSprite:FlxSprite;
+
 	private var starField:FlxStarField2D;
+	private var parallaxLayers1:Array<FlxSprite>;
+	private var parallaxLayers2:Array<FlxSprite>;
+	private var parallaxLayers3:Array<FlxSprite>;
 
 	private var birdHit:Bool;
 	private var isGameOver:Bool;
@@ -72,9 +77,47 @@ class PlayState extends FlxState
 			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
 		}
 
-		this.starField = new FlxStarField2D(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 150);
-		this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
-		this.add(this.starField);
+		if (MenuState.currentChoice == 0)
+		{
+			this.parallaxLayers1 = new Array<FlxSprite>();
+			var l1a:FlxSprite = new FlxSprite(0, 0);
+			l1a.loadGraphic("assets/images/parallax/layer1.png");
+			var l1b:FlxSprite = new FlxSprite(l1a.width, 0);
+			l1b.loadGraphic("assets/images/parallax/layer1.png");
+			l1a.velocity.x = l1b.velocity.x = -40;
+			this.add(l1a);
+			this.add(l1b);
+			this.parallaxLayers1.push(l1a);
+			this.parallaxLayers1.push(l1b);
+
+			this.parallaxLayers2 = new Array<FlxSprite>();
+			var l2a:FlxSprite = new FlxSprite(0, 0);
+			l2a.loadGraphic("assets/images/parallax/layer2.png");
+			var l2b:FlxSprite = new FlxSprite(l1a.width, 0);
+			l2b.loadGraphic("assets/images/parallax/layer2.png");
+			l2a.velocity.x = l2b.velocity.x = -60;
+			this.add(l2a);
+			this.add(l2b);
+			this.parallaxLayers2.push(l2a);
+			this.parallaxLayers2.push(l2b);
+
+			this.parallaxLayers3 = new Array<FlxSprite>();
+			var l3a:FlxSprite = new FlxSprite(0, 0);
+			l3a.loadGraphic("assets/images/parallax/layer3.png");
+			var l3b:FlxSprite = new FlxSprite(l1a.width, 0);
+			l3b.loadGraphic("assets/images/parallax/layer3.png");
+			l3a.velocity.x = l3b.velocity.x = -80;
+			this.add(l3a);
+			this.add(l3b);
+			this.parallaxLayers3.push(l3a);
+			this.parallaxLayers3.push(l3b);
+		}
+		else 
+		{
+			this.starField = new FlxStarField2D(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 150);
+			this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
+			this.add(this.starField);
+		}
 
 		this.pipes = new FlxTypedSpriteGroup<Pipe>(0.0, 0.0, 30);
 		for (i in 0...30)
@@ -230,6 +273,7 @@ class PlayState extends FlxState
 	{
 		if (!birdHit && !FlxFlicker.isFlickering(birdSprite) && FlxG.pixelPerfectOverlap(o1, o2))
 		{
+			/*
 			decreaseLives();
 			if (this.currentLives == 0)
 			{
@@ -239,6 +283,7 @@ class PlayState extends FlxState
 			{
 				FlxFlicker.flicker(birdSprite, 0.5);
 			}
+			*/
 		}
 	}
 
@@ -260,6 +305,25 @@ class PlayState extends FlxState
 		// Move pipes and record X of the one furthest away
 		if (!isGameOver)
 		{
+			if (this.parallaxLayers1[0].x + this.parallaxLayers1[0].width < 0)
+			{
+				var ps:FlxSprite = this.parallaxLayers1.shift();
+				ps.x = this.parallaxLayers1[0].x + this.parallaxLayers1[0].width;
+				this.parallaxLayers1.push(ps);
+			}
+			if (this.parallaxLayers2[0].x + this.parallaxLayers2[0].width < 0)
+			{
+				var ps:FlxSprite = this.parallaxLayers2.shift();
+				ps.x = this.parallaxLayers2[0].x + this.parallaxLayers2[0].width;
+				this.parallaxLayers2.push(ps);
+			}
+			if (this.parallaxLayers3[0].x + this.parallaxLayers3[0].width < 0)
+			{
+				var ps:FlxSprite = this.parallaxLayers3.shift();
+				ps.x = this.parallaxLayers3[0].x + this.parallaxLayers3[0].width;
+				this.parallaxLayers3.push(ps);
+			}
+
 			/*
 			if (FlxG.keys.pressed.LEFT)
 			{

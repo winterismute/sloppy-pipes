@@ -8,7 +8,7 @@ import flixel.FlxState;
 
 class MenuState extends FlxState
 {
-    private var currentChoice:Int;
+    public static var currentChoice:Int;
 
     private var howto:String =
     "HOWTO\nUP/DOWN ARROWS: Move pipes.\nRIGHT ARROW: slows down pipes.\nPress X to start!";
