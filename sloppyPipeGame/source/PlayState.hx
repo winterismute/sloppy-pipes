@@ -83,12 +83,12 @@ class PlayState extends FlxState
 		{
 			FlxG.sound.playMusic(songPath, 0.3, true);
 			FlxG.sound.music.play(true, startAt);
-			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
+			FlxG.sound.music.fadeIn(5, 0.8, 1.0);
 		}
 		else
 		{
 			FlxG.sound.music.play(true, startAt);
-			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
+			FlxG.sound.music.fadeIn(5, 0.8, 1.0);
 		}
 
 		if (MenuState.currentChoice == 0)
@@ -142,7 +142,6 @@ class PlayState extends FlxState
 		}
 		this.add(pipes);
 		//FlxG.random.resetInitialSeed()
-		spawnNewPipes(SCREEN_WIDTH);
 
 		this.rewindSprite = new FlxSprite(0, 0);
 		this.rewindSprite.loadGraphic(AssetPaths.rewind_sheet__png, true, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -191,10 +190,12 @@ class PlayState extends FlxState
 		currentBarIndex = 0;
 		barTimeStamp = 0;
 		msPerBar = ((1.0 / (SONG_BPM / 60)) * 1000) / 4;
-		trace("msPerBar: " + msPerBar);
+		//trace("msPerBar: " + msPerBar);
 		this.tickTimer = null;
 
 		setGameProperties();
+
+		spawnNewPipes(SCREEN_WIDTH);
 
 		isGameOver = false;
 		//this.mainTrack.play();
@@ -266,9 +267,9 @@ class PlayState extends FlxState
 		for (i in 0...toSpawn)
 		{
 			var ox:Int = FlxG.random.int(0, Pipe.WIDTH * 2);
-			var px:Float = nextX + spawnMinMargin + ox;
-			nextX = Std.int(px + Pipe.WIDTH);
-			if (FlxG.random.float() > (1 - this.spawnChance))
+			var px:Int = nextX + spawnMinMargin + ox;
+			nextX = px + Pipe.WIDTH;
+			if (FlxG.random.float() > (1.0 - this.spawnChance))
 			{ 
 				var p:Pipe = this.pipes.recycle();
 				p.x = px;
