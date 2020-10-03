@@ -1,5 +1,6 @@
 package;
 
+import flixel.text.FlxText;
 import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxStarField.FlxStarField2D;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
@@ -33,6 +34,7 @@ class PlayState extends FlxState
 	private var birdHit:Bool;
 	private var isGameOver:Bool;
 	private var currentLives:Int;
+	private var score:Int;
 	
 	// State to control bird
 	private var beats:Array<Bool>;
@@ -43,6 +45,7 @@ class PlayState extends FlxState
 
 	// UI
 	private var livesSprites:Array<FlxSprite>;
+	private var scoreLabel:FlxText;
 
 	override public function create():Void
 	{
@@ -90,6 +93,9 @@ class PlayState extends FlxState
 			this.add(s);
 			this.livesSprites.push(s);
 		}
+		this.score = 0;
+		this.scoreLabel = new FlxText(SCREEN_WIDTH - 100, 10, 90, "SCORE: " + this.score);
+		this.add(scoreLabel);
 
 		// Setup beat
 		var BPM:Int = 100;
@@ -139,11 +145,23 @@ class PlayState extends FlxState
 		}
 	}
 
-	private function decreaseLives()
+	private function decreaseLives():Void
 	{
 		this.livesSprites[this.currentLives-1].exists = false;
 		this.livesSprites[this.currentLives-1].visible = false;
 		this.currentLives -= 1;
+	}
+
+	private function setGameOver():Void
+	{
+		isGameOver = true;
+		for (p in this.pipes.members)
+		{
+			if (p.exists)
+			{
+				p.velocity.x = p.velocity.y = 0;
+			}
+		}
 	}
 
 	public function birdOverlapsPipe(o1:Bird, o2:Pipe):Void
@@ -201,6 +219,8 @@ class PlayState extends FlxState
 				this.rewindSprite.exists = false;
 				this.rewindSprite.animation.stop();
 				//this.starField.setStarSpeed(STARS_SPEED_MIN, STARS_SPEED_MAX);
+				this.score += 1;
+				this.scoreLabel.text = "SCORE: " + this.score;
 			}
 
 			for (p in this.pipes.members)
@@ -290,8 +310,8 @@ class PlayState extends FlxState
 		{
 			birdSprite.active = false;
 			birdSprite.exists = false;
-			isGameOver = true;
-			trace("isGameOver: true");
+			setGameOver();
+			//trace("isGameOver: true");
 		}
 		else if (!birdHit && !FlxFlicker.isFlickering(birdSprite))
 		{
