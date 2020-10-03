@@ -1,5 +1,6 @@
 package;
 
+import flixel.util.FlxColor;
 import flixel.addons.display.FlxBackdrop;
 import flixel.system.FlxSound;
 import flixel.text.FlxText;
@@ -44,8 +45,12 @@ class PlayState extends FlxState
 	private var currentLives:Int;
 	private var score:Int;
 	
-	// State to control bird
 	private var jumpYThreshold:Float;
+	private var flickerTime:Float;
+	private var spawnMinMargin:Int;
+	private var spawnChance:Float;
+
+	// State to control bird
 	private var beats:Array<Bool>;
 	private var currentBarIndex:Int;
 	private var msPerBar:Float;
@@ -58,6 +63,7 @@ class PlayState extends FlxState
 	// UI
 	private var livesSprites:Array<FlxSprite>;
 	private var scoreLabel:FlxText;
+	private var restartLabel:FlxText;
 
 	override public function create():Void
 	{
@@ -168,6 +174,12 @@ class PlayState extends FlxState
 		this.scoreLabel = new FlxText(SCREEN_WIDTH - 190 + 10, 10, 190, "SCORE: " + this.score, 16);
 		this.add(scoreLabel);
 
+		this.restartLabel = new FlxText(0, 0, 360, "GAME OVER! R to Restart", 20);
+		this.restartLabel.screenCenter();
+		this.add(this.restartLabel);
+		this.restartLabel.visible = false;
+		this.restartLabel.exists = false;
+
 		// Setup beat
 		// 4 bars per beat, 4 beat => 16 elements
 		beats = [
@@ -192,6 +204,10 @@ class PlayState extends FlxState
 	{
 		if (MenuState.currentChoice == 0)
 		{
+			this.restartLabel.color = FlxColor.BLACK;
+			this.spawnChance = 0.80;
+			this.flickerTime = 0.75;
+			this.spawnMinMargin = 50;
         	this.birdSprite.acceleration.y = 400;
 			this.birdSprite.maxVelocity.y = 600;
 			this.birdSprite.jumpAmount = 300;
@@ -200,6 +216,10 @@ class PlayState extends FlxState
 		}
 		else
 		{
+			this.restartLabel.color = FlxColor.WHITE;
+			this.spawnChance = 0.99;
+			this.flickerTime = 0.5;
+			this.spawnMinMargin = 20;
         	this.birdSprite.acceleration.y = 400;
 			this.birdSprite.maxVelocity.y = 700;
 			this.birdSprite.jumpAmount = 400;
@@ -242,27 +262,30 @@ class PlayState extends FlxState
 	{
 		var toSpawn:Int = 15;
 		var nextX:Int = fromX;
-		var marginX:Int = 20; 
 		//trace("Spawning from: " + nextX);
 		for (i in 0...toSpawn)
 		{
-			var p:Pipe = this.pipes.recycle();
 			var ox:Int = FlxG.random.int(0, Pipe.WIDTH * 2);
-			p.x = nextX + marginX + ox;
-			nextX = Std.int(p.x + p.width);
-			if (FlxG.random.float() < 0.5)
-			{
-				// TOP pipe
-				p.y = -Pipe.HEIGHT + FlxG.random.int(50, Pipe.HEIGHT - 80);
-				p.flipY = true;
+			var px:Float = nextX + spawnMinMargin + ox;
+			nextX = Std.int(px + Pipe.WIDTH);
+			if (FlxG.random.float() > (1 - this.spawnChance))
+			{ 
+				var p:Pipe = this.pipes.recycle();
+				p.x = px;
+				if (FlxG.random.float() < 0.5)
+				{
+					// TOP pipe
+					p.y = -Pipe.HEIGHT + FlxG.random.int(50, Pipe.HEIGHT - 80);
+					p.flipY = true;
+				}
+				else
+				{
+					// BOTTOM pipe
+					p.y = SCREEN_HEIGHT - FlxG.random.int(50, Pipe.HEIGHT - 80);
+					p.flipY = false;
+				}
+				p.revive();
 			}
-			else
-			{
-				// BOTTOM pipe
-				p.y = SCREEN_HEIGHT - FlxG.random.int(50, Pipe.HEIGHT - 80);
-				p.flipY = false;
-			}
-			p.revive();
 		}
 	}
 
@@ -276,6 +299,8 @@ class PlayState extends FlxState
 	private function setGameOver():Void
 	{
 		isGameOver = true;
+		this.restartLabel.visible = true;
+		this.restartLabel.exists = true;
 		for (p in this.pipes.members)
 		{
 			if (p.exists)
@@ -299,7 +324,7 @@ class PlayState extends FlxState
 			}
 			else
 			{
-				FlxFlicker.flicker(birdSprite, 0.5);
+				FlxFlicker.flicker(birdSprite, this.flickerTime);
 			}
 		}
 	}
@@ -318,32 +343,32 @@ class PlayState extends FlxState
 
 	override public function update(elapsed:Float):Void
 	{
+		if (MenuState.currentChoice == 0)
+		{
+			if (this.parallaxLayers1[0].x + this.parallaxLayers1[0].width < 0)
+			{
+				var ps:FlxSprite = this.parallaxLayers1.shift();
+				ps.x = this.parallaxLayers1[0].x + this.parallaxLayers1[0].width;
+				this.parallaxLayers1.push(ps);
+			}
+			if (this.parallaxLayers2[0].x + this.parallaxLayers2[0].width < 0)
+			{
+				var ps:FlxSprite = this.parallaxLayers2.shift();
+				ps.x = this.parallaxLayers2[0].x + this.parallaxLayers2[0].width;
+				this.parallaxLayers2.push(ps);
+			}
+			if (this.parallaxLayers3[0].x + this.parallaxLayers3[0].width < 0)
+			{
+				var ps:FlxSprite = this.parallaxLayers3.shift();
+				ps.x = this.parallaxLayers3[0].x + this.parallaxLayers3[0].width;
+				this.parallaxLayers3.push(ps);
+			}
+		}
+
 		var maxX:Int = 0;
 		// Move pipes and record X of the one furthest away
 		if (!isGameOver)
 		{
-			if (MenuState.currentChoice == 0)
-			{
-				if (this.parallaxLayers1[0].x + this.parallaxLayers1[0].width < 0)
-				{
-					var ps:FlxSprite = this.parallaxLayers1.shift();
-					ps.x = this.parallaxLayers1[0].x + this.parallaxLayers1[0].width;
-					this.parallaxLayers1.push(ps);
-				}
-				if (this.parallaxLayers2[0].x + this.parallaxLayers2[0].width < 0)
-				{
-					var ps:FlxSprite = this.parallaxLayers2.shift();
-					ps.x = this.parallaxLayers2[0].x + this.parallaxLayers2[0].width;
-					this.parallaxLayers2.push(ps);
-				}
-				if (this.parallaxLayers3[0].x + this.parallaxLayers3[0].width < 0)
-				{
-					var ps:FlxSprite = this.parallaxLayers3.shift();
-					ps.x = this.parallaxLayers3[0].x + this.parallaxLayers3[0].width;
-					this.parallaxLayers3.push(ps);
-				}
-			}
-
 			/*
 			if (FlxG.keys.pressed.LEFT)
 			{
@@ -351,6 +376,7 @@ class PlayState extends FlxState
 			}
 			*/
 			var backPressed:Bool = false;
+			var forwardPressed:Bool = false;
 			if (FlxG.keys.pressed.X)
 			{
 				this.rewindSprite.visible = true;
@@ -358,6 +384,13 @@ class PlayState extends FlxState
 				this.rewindSprite.animation.play("rew");
 				//this.starField.setStarSpeed(Std.int(STARS_SPEED_MIN / 5), Std.int(STARS_SPEED_MAX / 5));
 				backPressed = true;
+			}
+			else if (FlxG.keys.pressed.Z)
+			{
+				this.rewindSprite.visible = true;
+				this.rewindSprite.exists = true;
+				this.rewindSprite.animation.play("rew", false, true);
+				forwardPressed = true;
 			}
 			else
 			{
@@ -380,6 +413,10 @@ class PlayState extends FlxState
 					if (backPressed)
 					{
 						p.velocity.x = PIPE_VEL_X / 5;
+					}
+					else if (forwardPressed)
+					{
+						p.velocity.x = PIPE_VEL_X * 3;
 					}
 					else
 					{
