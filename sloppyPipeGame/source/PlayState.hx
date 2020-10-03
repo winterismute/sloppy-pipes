@@ -351,7 +351,7 @@ class PlayState extends FlxState
 			}
 			*/
 			var backPressed:Bool = false;
-			if (FlxG.keys.pressed.RIGHT)
+			if (FlxG.keys.pressed.X)
 			{
 				this.rewindSprite.visible = true;
 				this.rewindSprite.exists = true;
