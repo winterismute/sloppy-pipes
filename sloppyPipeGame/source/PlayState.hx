@@ -9,7 +9,12 @@ import Pipe;
 
 class PlayState extends FlxState
 {
-	public static var BIRD_INITIAL_Y:Int = 400;
+	//public static var SCREEN_WIDTH = 1024;
+	//public static var SCREEN_HEIGHT = 768;
+	public static var SCREEN_WIDTH = 800;
+	public static var SCREEN_HEIGHT = 600;
+
+	public static var BIRD_INITIAL_Y:Int = Std.int(SCREEN_HEIGHT / 2);
 	public static var PIPE_VEL_X:Float = -200.0;
 
 	private var birdSprite:Bird;
@@ -37,7 +42,7 @@ class PlayState extends FlxState
 		}
 		this.add(pipes);
 		//FlxG.random.resetInitialSeed()
-		spawnNewPipes(1024);
+		spawnNewPipes(SCREEN_WIDTH);
 
 		this.birdSprite = new Bird(50, BIRD_INITIAL_Y);
 		birdHit = false;
@@ -64,23 +69,25 @@ class PlayState extends FlxState
 	{
 		var toSpawn:Int = 15;
 		var nextX:Int = fromX;
+		var marginX:Int = 20; 
 		//trace("Spawning from: " + nextX);
 		for (i in 0...toSpawn)
 		{
 			var p:Pipe = this.pipes.recycle();
 			var ox:Int = FlxG.random.int(0, Pipe.WIDTH * 2);
-			p.x = nextX + 20 + ox;
+			p.x = nextX + marginX + ox;
 			nextX = Std.int(p.x + p.width);
 			if (FlxG.random.float() < 0.5)
 			{
 				// TOP pipe
-				p.y = -Pipe.HEIGHT + FlxG.random.int(50, 300);
+				p.y = -Pipe.HEIGHT + FlxG.random.int(50, Pipe.HEIGHT - 80);
 				p.flipY = true;
 			}
 			else
 			{
 				// BOTTOM pipe
-				p.y = 768 - FlxG.random.int(50, 300);
+				p.y = SCREEN_HEIGHT - FlxG.random.int(50, Pipe.HEIGHT - 80);
+				p.flipY = false;
 			}
 			p.velocity.x = PIPE_VEL_X;
 			p.alive = true;
@@ -161,7 +168,7 @@ class PlayState extends FlxState
 		super.update(elapsed);
 
 		// Do collisions here
-		if (birdSprite.y > 768)
+		if (birdSprite.y > SCREEN_HEIGHT)
 		{
 			birdSprite.active = false;
 			birdSprite.exists = false;
@@ -173,7 +180,7 @@ class PlayState extends FlxState
 			FlxG.overlap(this.birdSprite, this.pipes, birdOverlapsPipe);
 		}
 
-		if (!isGameOver && maxX < 1200)
+		if (!isGameOver && maxX < SCREEN_WIDTH + 100)
 		{
 			spawnNewPipes(maxX + Pipe.WIDTH);
 		}

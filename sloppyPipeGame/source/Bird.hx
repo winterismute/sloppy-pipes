@@ -12,7 +12,8 @@ class Bird extends FlxSprite
     public function new(startX:Float, startY:Float)
     {
         super(startX, startY);
-        this.makeGraphic(40, 40, FlxColor.RED);
+        //this.makeGraphic(40, 40, FlxColor.RED);
+        this.loadGraphic("assets/images/bird.png");
         this.acceleration.y = 400;
         this.maxVelocity.y = 500;
 
