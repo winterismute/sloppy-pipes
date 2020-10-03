@@ -65,15 +65,23 @@ class PlayState extends FlxState
 		//bgColor = 0xffaaaaaa;
 
 		FlxG.mouse.visible = false;
+		var songPath:String = "assets/music/giag.ogg";
+		var startAt:Float = 56000.0;
+		if (MenuState.currentChoice == 0)
+		{
+			songPath = "assets/music/happy.ogg";
+			startAt = 0.0;
+		}
+	
 		if (FlxG.sound.music == null)
 		{
-			FlxG.sound.playMusic("assets/music/giag.ogg", 0.3, true);
-			FlxG.sound.music.play(true, 10000.0);
+			FlxG.sound.playMusic(songPath, 0.3, true);
+			FlxG.sound.music.play(true, startAt);
 			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
 		}
 		else
 		{
-			FlxG.sound.music.play(true, 10000.0);
+			FlxG.sound.music.play(true, startAt);
 			FlxG.sound.music.fadeIn(20, 0.1, 1.0);
 		}
 
@@ -273,7 +281,6 @@ class PlayState extends FlxState
 	{
 		if (!birdHit && !FlxFlicker.isFlickering(birdSprite) && FlxG.pixelPerfectOverlap(o1, o2))
 		{
-			/*
 			decreaseLives();
 			if (this.currentLives == 0)
 			{
@@ -283,7 +290,6 @@ class PlayState extends FlxState
 			{
 				FlxFlicker.flicker(birdSprite, 0.5);
 			}
-			*/
 		}
 	}
 
@@ -305,23 +311,26 @@ class PlayState extends FlxState
 		// Move pipes and record X of the one furthest away
 		if (!isGameOver)
 		{
-			if (this.parallaxLayers1[0].x + this.parallaxLayers1[0].width < 0)
+			if (MenuState.currentChoice == 0)
 			{
-				var ps:FlxSprite = this.parallaxLayers1.shift();
-				ps.x = this.parallaxLayers1[0].x + this.parallaxLayers1[0].width;
-				this.parallaxLayers1.push(ps);
-			}
-			if (this.parallaxLayers2[0].x + this.parallaxLayers2[0].width < 0)
-			{
-				var ps:FlxSprite = this.parallaxLayers2.shift();
-				ps.x = this.parallaxLayers2[0].x + this.parallaxLayers2[0].width;
-				this.parallaxLayers2.push(ps);
-			}
-			if (this.parallaxLayers3[0].x + this.parallaxLayers3[0].width < 0)
-			{
-				var ps:FlxSprite = this.parallaxLayers3.shift();
-				ps.x = this.parallaxLayers3[0].x + this.parallaxLayers3[0].width;
-				this.parallaxLayers3.push(ps);
+				if (this.parallaxLayers1[0].x + this.parallaxLayers1[0].width < 0)
+				{
+					var ps:FlxSprite = this.parallaxLayers1.shift();
+					ps.x = this.parallaxLayers1[0].x + this.parallaxLayers1[0].width;
+					this.parallaxLayers1.push(ps);
+				}
+				if (this.parallaxLayers2[0].x + this.parallaxLayers2[0].width < 0)
+				{
+					var ps:FlxSprite = this.parallaxLayers2.shift();
+					ps.x = this.parallaxLayers2[0].x + this.parallaxLayers2[0].width;
+					this.parallaxLayers2.push(ps);
+				}
+				if (this.parallaxLayers3[0].x + this.parallaxLayers3[0].width < 0)
+				{
+					var ps:FlxSprite = this.parallaxLayers3.shift();
+					ps.x = this.parallaxLayers3[0].x + this.parallaxLayers3[0].width;
+					this.parallaxLayers3.push(ps);
+				}
 			}
 
 			/*
