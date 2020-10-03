@@ -195,7 +195,12 @@ class PlayState extends FlxState
 
 		setGameProperties();
 
-		spawnNewPipes(SCREEN_WIDTH);
+		var startSpawnAtX:Int = SCREEN_WIDTH;
+		if (MenuState.currentChoice == 1)
+		{
+			startSpawnAtX *= 2; 
+		}
+		spawnNewPipes(startSpawnAtX);
 
 		isGameOver = false;
 		//this.mainTrack.play();
@@ -322,6 +327,7 @@ class PlayState extends FlxState
 			if (this.currentLives == 0)
 			{
 				birdHit = true;
+				FlxG.camera.flash(FlxColor.RED, 0.5, null, true);
 			}
 			else
 			{
