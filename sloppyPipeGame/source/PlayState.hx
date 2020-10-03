@@ -1,5 +1,8 @@
 package;
 
+import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
+import flixel.util.FlxTimer;
+import haxe.Timer;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
@@ -11,14 +14,16 @@ class PlayState extends FlxState
 {
 	//public static var SCREEN_WIDTH = 1024;
 	//public static var SCREEN_HEIGHT = 768;
-	public static var SCREEN_WIDTH = 800;
-	public static var SCREEN_HEIGHT = 600;
+	public static var SCREEN_WIDTH:Int = 800;
+	public static var SCREEN_HEIGHT:Int = 450;
+	public static var HALF_SCREEN_HEIGHT:Int = Std.int(SCREEN_HEIGHT / 2);
 
-	public static var BIRD_INITIAL_Y:Int = Std.int(SCREEN_HEIGHT / 2);
+	public static var BIRD_INITIAL_Y:Int = HALF_SCREEN_HEIGHT;
 	public static var PIPE_VEL_X:Float = -200.0;
 
 	private var birdSprite:Bird;
-	private var pipes:FlxTypedGroup<Pipe>;
+	private var pipes:FlxTypedSpriteGroup<Pipe>;
+	private var rewindSprite:FlxSprite;
 	private var birdHit:Bool;
 	private var isGameOver:Bool;
 	
@@ -27,13 +32,14 @@ class PlayState extends FlxState
 	private var currentBarIndex:Int;
 	private var msPerBar:Float;
 	private var barTimeStamp:Float;
+	private var tickTimer:Timer;
 
 	override public function create():Void
 	{
 		super.create();
 		//bgColor = 0xffaaaaaa;
 
-		this.pipes = new FlxTypedGroup<Pipe>(30);
+		this.pipes = new FlxTypedSpriteGroup<Pipe>(0.0, 0.0, 30);
 		for (i in 0...30)
 		{
 			var p : Pipe = new Pipe(0, 1100);
@@ -48,6 +54,16 @@ class PlayState extends FlxState
 		birdHit = false;
 		this.add(this.birdSprite);
 
+		this.rewindSprite = new FlxSprite(0, 0);
+		this.rewindSprite.loadGraphic(AssetPaths.rewind_sheet__png, true, SCREEN_WIDTH, SCREEN_HEIGHT);
+		this.rewindSprite.animation.add("rew",
+			[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19],
+			20);
+		this.rewindSprite.alpha = 0.5;
+		this.add(rewindSprite);
+		this.rewindSprite.visible = false;
+		this.rewindSprite.exists = false;
+
 		// Setup beat
 		var BPM:Int = 100;
 		// 4 bars per beat, 4 beat => 16 elements
@@ -61,6 +77,7 @@ class PlayState extends FlxState
 		barTimeStamp = 0;
 		msPerBar = ((1.0 / (BPM / 60)) * 1000) / 4;
 		trace("msPerBar: " + msPerBar);
+		this.tickTimer = null;
 
 		isGameOver = false;
 	}
@@ -103,22 +120,45 @@ class PlayState extends FlxState
 		}
 	}
 
+	public function onBarTick():Void
+	{
+		if (!birdHit)
+		{
+			currentBarIndex = (currentBarIndex + 1) % 16;
+			if (beats[currentBarIndex])
+			{
+				this.birdSprite.onJumpKeyJustPressed();
+			}
+		}
+	}
+
 	override public function update(elapsed:Float):Void
 	{
 		var maxX:Int = 0;
 		// Move pipes and record X of the one furthest away
 		if (!isGameOver)
 		{
-			var pipeStepX:Float = 0.0;
-			var pipeStepY:Float = 0.0;
+			/*
 			if (FlxG.keys.pressed.LEFT)
 			{
 				pipeStepX = -100.0 * elapsed;
 			}
-			else if (FlxG.keys.pressed.RIGHT)
+			*/
+			var backPressed:Bool = false;
+			if (FlxG.keys.pressed.RIGHT)
 			{
-				pipeStepX = 100.0 * elapsed;
+				this.rewindSprite.visible = true;
+				this.rewindSprite.exists = true;
+				this.rewindSprite.animation.play("rew");
+				backPressed = true;
 			}
+			else
+			{
+				this.rewindSprite.visible = false;
+				this.rewindSprite.exists = false;
+				this.rewindSprite.animation.stop();
+			}
+
 			for (p in this.pipes.members)
 			{
 				if (p.exists)
@@ -127,20 +167,47 @@ class PlayState extends FlxState
 					{
 						maxX = Std.int(p.x);
 					}
-					p.velocity.x = PIPE_VEL_X + pipeStepX;
+					if (backPressed)
+					{
+						p.velocity.x = PIPE_VEL_X / 5;
+					}
+					else
+					{
+						p.velocity.x = PIPE_VEL_X;
+					}
 				}
+			}
+			// Move pipes on Y
+			var yFactor:Float = 150.0;
+			if (FlxG.keys.pressed.DOWN)
+			{
+				pipes.y = Math.min(pipes.y + (yFactor * elapsed), 50.0);
+			}
+			else if (FlxG.keys.pressed.UP)
+			{
+				pipes.y = Math.max(pipes.y - (yFactor * elapsed), -50.0);
 			}
 		}
 
 		// Move Bird
-		if (!birdHit)
+		/*
+		if (this.tickTimer == null)
 		{
-			/*
-			if (FlxG.keys.anyJustPressed(["W"]))
+			if (currentBarIndex == 0 && beats[0])
 			{
 				this.birdSprite.onJumpKeyJustPressed();
 			}
-			*/
+			this.tickTimer = new Timer(msPerBar);
+			this.tickTimer.run = onBarTick;
+		}
+		*/
+		/*
+		if (!birdHit)
+		{
+			//if (FlxG.keys.anyJustPressed(["W"]))
+			//{
+			//	this.birdSprite.onJumpKeyJustPressed();
+			//}
 
 			if (currentBarIndex == 0 && barTimeStamp == 0.0)
 			{
@@ -164,6 +231,13 @@ class PlayState extends FlxState
 				}
 			}
 		}
+		*/
+
+		if (!birdHit && birdSprite.y >= HALF_SCREEN_HEIGHT)
+		{
+			this.birdSprite.onJumpKeyJustPressed();
+		}
+
 		birdSprite.y = Math.max(birdSprite.y, -100);
 		super.update(elapsed);
 
