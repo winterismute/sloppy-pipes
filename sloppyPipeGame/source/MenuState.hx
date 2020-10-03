@@ -1,5 +1,6 @@
 package;
 
+import flixel.util.FlxAxes;
 import flixel.addons.display.FlxStarField.FlxStarField2D;
 import flixel.FlxSprite;
 import flixel.util.FlxColor;
@@ -11,8 +12,11 @@ class MenuState extends FlxState
 {
     public static var currentChoice:Int;
 
-    private var howto:String =
+    private static var howto:String =
     "HOWTO\nUP/DOWN ARROWS: Move pipes.\nX: slows down pipes.\nPress X to start!";
+
+    private static var about:String =
+    "An idea of BRUNO BARBERA (twitter.com/BrunoB78)\nExecution by WINTERISMUTE (twitter.com/winterismute)";
 
     private var bgDay:FlxSprite;
     private var bgNight:FlxStarField2D;
@@ -22,6 +26,7 @@ class MenuState extends FlxState
     private var daylightLabel:FlxText;
     private var nightLabel:FlxText;
     private var howtoLabel:FlxText;
+    private var aboutLabel:FlxText;
 
 	override public function create():Void
     {
@@ -38,6 +43,12 @@ class MenuState extends FlxState
         this.bgNight.visible = false;
         this.bgNight.exists = false;
         this.add(bgNight);
+
+        this.aboutLabel = new FlxText(0, 0, 500, about, 14);
+        this.aboutLabel.color = FlxColor.BLUE;
+        this.add(aboutLabel);
+        this.aboutLabel.y = 10;
+        this.aboutLabel.screenCenter(FlxAxes.X);
 
         this.daylightLabel = new FlxText(0, 0, 200, "DAYLIGHT MODE (easy)", 18);
         this.daylightLabel.color = FlxColor.BLACK;
