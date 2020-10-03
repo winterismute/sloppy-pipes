@@ -13,7 +13,7 @@ class MenuState extends FlxState
     public static var currentChoice:Int;
 
     private static var howto:String =
-    "HOWTO\nUP/DOWN ARROWS: Move pipes.\nZ/X: slow/speed up down pipes.\nPress X to start!";
+    "HOWTO\nUP/DOWN ARROWS: Lower/raise pipes\nZ/X: Slow down/speed up pipes\nSelect mode and press X to start!";
 
     private static var about:String =
     "An idea of BRUNO BARBERA (twitter.com/BrunoB78)\nExecution by WINTERISMUTE (twitter.com/winterismute)";
@@ -68,7 +68,7 @@ class MenuState extends FlxState
         this.add(this.cursor);
         this.cursor.x -= (this.cursor.width + 20);
 
-        this.howtoLabel = new FlxText(0, 0, 350, howto, 16);
+        this.howtoLabel = new FlxText(0, 0, 380, howto, 16);
         this.howtoLabel.color = FlxColor.RED;
         this.add(this.howtoLabel);
         this.howtoLabel.screenCenter();
