@@ -1,14 +1,11 @@
 package;
 
 import flixel.util.FlxColor;
-import flixel.addons.display.FlxBackdrop;
-import flixel.system.FlxSound;
+
 import flixel.text.FlxText;
 import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxStarField.FlxStarField2D;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
-import flixel.util.FlxTimer;
-import haxe.Timer;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
@@ -49,16 +46,6 @@ class PlayState extends FlxState
 	private var flickerTime:Float;
 	private var spawnMinMargin:Int;
 	private var spawnChance:Float;
-
-	// State to control bird
-	private var beats:Array<Bool>;
-	private var currentBarIndex:Int;
-	private var msPerBar:Float;
-	private var barTimeStamp:Float;
-	private var tickTimer:Timer;
-
-	// Sounds
-	private var mainTrack:FlxSound;
 
 	// UI
 	private var livesSprites:Array<FlxSprite>;
@@ -179,20 +166,6 @@ class PlayState extends FlxState
 		this.restartLabel.visible = false;
 		this.restartLabel.exists = false;
 
-		// Setup beat
-		// 4 bars per beat, 4 beat => 16 elements
-		beats = [
-			false, false, false,false,
-			true, false, false, false,
-			false, false, false, false,
-			true, false, false, false
-		];
-		currentBarIndex = 0;
-		barTimeStamp = 0;
-		msPerBar = ((1.0 / (SONG_BPM / 60)) * 1000) / 4;
-		//trace("msPerBar: " + msPerBar);
-		this.tickTimer = null;
-
 		setGameProperties();
 
 		var startSpawnAtX:Int = SCREEN_WIDTH;
@@ -203,7 +176,6 @@ class PlayState extends FlxState
 		spawnNewPipes(startSpawnAtX);
 
 		isGameOver = false;
-		//this.mainTrack.play();
 	}
 
 	private function setGameProperties():Void
@@ -260,8 +232,6 @@ class PlayState extends FlxState
 
 		birdHit = false;
 		isGameOver = false;
-		this.mainTrack.play(true, 10000);
-		this.mainTrack.fadeIn(30.0, 0.0, 1.0);
 	}
 
 	public function spawnNewPipes(fromX:Int):Void
@@ -332,18 +302,6 @@ class PlayState extends FlxState
 			else
 			{
 				FlxFlicker.flicker(birdSprite, this.flickerTime);
-			}
-		}
-	}
-
-	public function onBarTick():Void
-	{
-		if (!birdHit)
-		{
-			currentBarIndex = (currentBarIndex + 1) % 16;
-			if (beats[currentBarIndex])
-			{
-				this.birdSprite.onJumpKeyJustPressed();
 			}
 		}
 	}
@@ -452,56 +410,12 @@ class PlayState extends FlxState
 			}
 		}
 
-		// Move Bird
-		/*
-		if (this.tickTimer == null)
-		{
-			if (currentBarIndex == 0 && beats[0])
-			{
-				this.birdSprite.onJumpKeyJustPressed();
-			}
-			this.tickTimer = new Timer(msPerBar);
-			this.tickTimer.run = onBarTick;
-		}
-		*/
-		/*
-		if (!birdHit)
-		{
-			//if (FlxG.keys.anyJustPressed(["W"]))
-			//{
-			//	this.birdSprite.onJumpKeyJustPressed();
-			//}
-
-			if (currentBarIndex == 0 && barTimeStamp == 0.0)
-			{
-				if (beats[0])
-				{
-					this.birdSprite.onJumpKeyJustPressed();
-				}
-				barTimeStamp = elapsed * 1000.0;
-			}
-			else
-			{
-				barTimeStamp += elapsed * 1000.0;
-				if (barTimeStamp > msPerBar)
-				{
-					currentBarIndex = (currentBarIndex + 1) % 16;
-					if (beats[currentBarIndex])
-					{
-						this.birdSprite.onJumpKeyJustPressed();
-					}
-					barTimeStamp -= msPerBar;
-				}
-			}
-		}
-		*/
-
 		if (!birdHit && birdSprite.y >= this.jumpYThreshold)
 		{
 			this.birdSprite.onJumpKeyJustPressed();
 		}
-
 		birdSprite.y = Math.max(birdSprite.y, -100);
+
 		super.update(elapsed);
 
 		// Do collisions here
