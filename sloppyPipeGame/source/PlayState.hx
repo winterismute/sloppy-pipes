@@ -306,28 +306,23 @@ class PlayState extends FlxState
 		}
 	}
 
+	private function updateParallaxArray(parallaxLayers:Array<FlxSprite>):Void
+	{
+		if (parallaxLayers[0].x + parallaxLayers[0].width < 0)
+		{
+			var ps:FlxSprite = parallaxLayers.shift();
+			ps.x = parallaxLayers[0].x + parallaxLayers[0].width;
+			parallaxLayers.push(ps);
+		}
+	}
+
 	override public function update(elapsed:Float):Void
 	{
 		if (MenuState.currentChoice == 0)
 		{
-			if (this.parallaxLayers1[0].x + this.parallaxLayers1[0].width < 0)
-			{
-				var ps:FlxSprite = this.parallaxLayers1.shift();
-				ps.x = this.parallaxLayers1[0].x + this.parallaxLayers1[0].width;
-				this.parallaxLayers1.push(ps);
-			}
-			if (this.parallaxLayers2[0].x + this.parallaxLayers2[0].width < 0)
-			{
-				var ps:FlxSprite = this.parallaxLayers2.shift();
-				ps.x = this.parallaxLayers2[0].x + this.parallaxLayers2[0].width;
-				this.parallaxLayers2.push(ps);
-			}
-			if (this.parallaxLayers3[0].x + this.parallaxLayers3[0].width < 0)
-			{
-				var ps:FlxSprite = this.parallaxLayers3.shift();
-				ps.x = this.parallaxLayers3[0].x + this.parallaxLayers3[0].width;
-				this.parallaxLayers3.push(ps);
-			}
+			updateParallaxArray(this.parallaxLayers1);
+			updateParallaxArray(this.parallaxLayers2);
+			updateParallaxArray(this.parallaxLayers3);
 		}
 
 		var maxX:Int = 0;
