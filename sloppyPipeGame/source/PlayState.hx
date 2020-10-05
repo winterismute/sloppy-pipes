@@ -7,7 +7,6 @@ import flixel.effects.FlxFlicker;
 import flixel.addons.display.FlxStarField.FlxStarField2D;
 import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 import flixel.FlxSprite;
-import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.FlxG;
 import flixel.FlxState;
 import Bird;
@@ -58,11 +57,11 @@ class PlayState extends FlxState
 		//bgColor = 0xffaaaaaa;
 
 		FlxG.mouse.visible = false;
-		var songPath:String = "assets/music/giag.ogg";
+		var songPath:String = "assets/music/night.ogg";
 		var startAt:Float = 56000.0;
 		if (MenuState.currentChoice == 0)
 		{
-			songPath = "assets/music/happy.ogg";
+			songPath = "assets/music/day.ogg";
 			startAt = 0.0;
 		}
 	
