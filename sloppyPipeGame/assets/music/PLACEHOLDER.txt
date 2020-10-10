@@ -1,0 +1,3 @@
+To build, add to this folder:
+- A music file called day.ogg
+- A music file called night.ogg
